@@ -96,13 +96,80 @@ modal.addEventListener("click", (event) => {
 
 closeModalBtn.addEventListener("click", closeModal)
 
-const end = 3500;
 
 const getTop = () => window.pageYOffset || document.documentElement.scrollTop;
+
+const end = 3500;
 
 window.addEventListener('scroll', () => {
    if (getTop() > end){
        openModal();
    };
 });
+
+
+
+
+const forms = document.querySelectorAll("form");
+const message = {
+  loading: "Идет загрузка",
+  success: "Спасибо, скоро свяжемся !",
+  fail: "Что-то пошло не так",
+};
+
+forms.forEach((item) => {
+  bindPostData(item);
+});
+
+
+const postData = async (url, data) => {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-type": "application/json",
+    },
+    body: data,
+  });
+
+  return res;
+};
+
+
+function bindPostData(form) {
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const messageBlock = document.createElement("div");
+    messageBlock.textContent = message.loading;
+    form.append(messageBlock);
+
+    const formData = new FormData(form);
+    const object = {};
+
+    formData.forEach((item, i) => {
+      object[i] = item;
+    });
+
+    fetch("server.php", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(object),
+    });
+
+    postData("server.php", JSON.stringify(object))
+      .then((data) => {
+        console.log(data);
+        messageBlock.textContent = message.success;
+      })
+      .catch(() => {
+        console.log("error");
+        messageBlock.textContent = message.success;
+      })
+      .finally(() => {
+        console.log("ok");
+      });
+  });
+}
 
